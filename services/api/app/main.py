@@ -11,9 +11,10 @@ from prometheus_client import (
     generate_latest,
 )
 from sqlalchemy import select, text
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from services.common.config import configure_logging
+from services.common.config import SERVICE_VERSION, configure_logging
 from services.common.db import get_db
 from services.common.models import Case, CaseStatus, Job, JobStatus, JobType
 from services.common.schemas import (
@@ -22,12 +23,13 @@ from services.common.schemas import (
     CaseRead,
     HealthResponse,
     JobRead,
+    ServiceErrorResponse,
 )
 
 configure_logging()
 logger = logging.getLogger("services.api.main")
 
-app = FastAPI(title="MAIE 6000C Starter API", version="0.1.0")
+app = FastAPI(title="MAIE 6000C Starter API", version=SERVICE_VERSION)
 
 HTTP_REQUESTS = Counter(
     "api_http_requests_total",
@@ -110,10 +112,28 @@ def health_live() -> HealthResponse:
     return HealthResponse(service="api", status="ok")
 
 
-@app.get("/health/ready", response_model=HealthResponse)
-def health_ready(db: Session = Depends(get_db)) -> HealthResponse:
-    db.execute(text("SELECT 1"))
-    return HealthResponse(service="api", status="ok")
+@app.get("/health/ready", response_model=HealthResponse | ServiceErrorResponse)
+def health_ready(
+    response: Response,
+    db: Session = Depends(get_db),
+) -> HealthResponse | ServiceErrorResponse:
+    """Report whether this instance can serve traffic.
+
+    Readiness means the process is up *and* its database dependency answers a
+    trivial probe. When the probe fails the endpoint returns 503 so orchestrators
+    and load balancers stop routing traffic here, and the failure is logged.
+    """
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError as exc:
+        logger.error(
+            "readiness_check_failed",
+            extra={"service": "api", "dependency": "database", "error": str(exc)},
+        )
+        response.status_code = 503
+        return ServiceErrorResponse(service="api", status="unavailable", error="database")
+
+    return HealthResponse(service="api", status="ok", version=SERVICE_VERSION, database="ok")
 
 
 @app.get("/metrics")

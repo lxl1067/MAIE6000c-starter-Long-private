@@ -6,6 +6,8 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pythonjsonlogger import jsonlogger
 
+SERVICE_VERSION = "0.1.0"
+
 
 class Settings(BaseSettings):
     app_env: str = "development"

@@ -10,6 +10,14 @@ from services.common.models import CaseStatus, JobStatus, JobType
 class HealthResponse(BaseModel):
     service: str
     status: str
+    version: str | None = None
+    database: str | None = None
+
+
+class ServiceErrorResponse(BaseModel):
+    service: str
+    status: str
+    error: str
 
 
 class CaseCreate(BaseModel):

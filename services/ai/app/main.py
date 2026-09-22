@@ -6,13 +6,13 @@ from time import perf_counter
 from fastapi import FastAPI, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 
-from services.common.config import configure_logging
+from services.common.config import SERVICE_VERSION, configure_logging
 from services.common.schemas import HealthResponse, TriageRequest, TriageResponse
 
 configure_logging()
 logger = logging.getLogger("services.ai.main")
 
-app = FastAPI(title="MAIE 6000C Starter AI Service", version="0.1.0")
+app = FastAPI(title="MAIE 6000C Starter AI Service", version=SERVICE_VERSION)
 
 TRIAGE_REQUESTS = Counter("ai_triage_requests_total", "Total triage requests", ["label"])
 TRIAGE_LATENCY = Histogram("ai_triage_duration_seconds", "Triage duration in seconds")
@@ -62,7 +62,7 @@ def health_live() -> HealthResponse:
 
 @app.get("/health/ready", response_model=HealthResponse)
 def health_ready() -> HealthResponse:
-    return HealthResponse(service="ai", status="ok")
+    return HealthResponse(service="ai", status="ok", version=SERVICE_VERSION)
 
 
 @app.get("/metrics")

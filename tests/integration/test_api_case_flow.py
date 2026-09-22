@@ -37,3 +37,30 @@ def test_create_and_read_case_and_job(client):
     job_response = client.get(f"/jobs/{job_id}")
     assert job_response.status_code == 200
     assert job_response.json()["case_id"] == case_id
+
+
+def test_create_case_enqueues_job(client):
+    """Recovered from tests/integration/test_api_integration.py python.
+
+    That file name did not match pytest's ``test_*.py`` collection pattern, so
+    this test silently never ran.
+    """
+    response = client.post(
+        "/cases",
+        json={
+            "title": "Cannot login",
+            "description": "User cannot access the dashboard after password reset.",
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+
+    assert data["case"]["status"] == "queued"
+    assert data["job"]["status"] == "pending"
+
+    case_id = data["case"]["id"]
+    get_case = client.get(f"/cases/{case_id}")
+
+    assert get_case.status_code == 200
+    assert get_case.json()["title"] == "Cannot login"
