@@ -2,7 +2,7 @@
 
 ## Student information
 
-- Name: Li Xiaolong (李小龙)
+- Name: Li Xiaolong (李晓龙)
 - Student ID: 21341720
 - Repository: https://github.com/lxl1067/MAIE6000c-starter-Long-private
 - Checkpoint tag: `w03-readiness`
@@ -113,10 +113,7 @@ existing (dependency-free) readiness shape plus the shared version value.
 ## 5. AI Use Statement
 
 - **Tool name:** DeepSeek Harness (AI coding agent, deepseek-flash model).
-- **What it was used for:** reading the assignment PDF; inspecting the starter
-  repository; drafting the readiness-endpoint change and its tests; running the
-  test suite, linter, migration, and a local end-to-end smoke run; drafting this
-  summary and the Canvas note.
+- **What it was used for:**Review and understand the project structure, and provide suggestions for test        modifications.
 - **What I verified, changed, or rejected:**
   - I read every changed file and confirmed the behaviour against the live
     running services rather than trusting the generated summary.
